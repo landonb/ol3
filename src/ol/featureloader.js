@@ -77,7 +77,10 @@ ol.featureloader.loadFeaturesXhr = function(url, format, success) {
               }
               goog.dispose(xhrIo);
             }, false, this);
-        xhrIo.send(url);
+// FIXME: Let caller specify GET or POST.
+//        [lb] is just testing for now.
+        //xhrIo.send(url);
+        xhrIo.send(url, 'POST', '{"test": "blah"}');
       });
 };
 
