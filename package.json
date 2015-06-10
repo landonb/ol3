@@ -36,7 +36,7 @@
     "metalsmith": "1.6.0",
     "metalsmith-templates": "0.7.0",
     "nomnom": "1.8.0",
-    "rbush": "1.4.0",
+    "rbush": "git://github.com/landonb/rbush.git#v1.4.0-lb",
     "temp": "0.8.1",
     "walk": "2.3.4",
     "wrench": "1.5.8",
