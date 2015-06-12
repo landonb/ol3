@@ -1,5 +1,8 @@
 .agignore
 
+*build/ol-debug.js
+*build/ol.js
+*build/ol.js.map
 *changelog/
 *config/jsdoc/
 jquery.min.js
