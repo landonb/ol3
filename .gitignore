@@ -3,3 +3,19 @@
 /node_modules/
 /dist/
 /coverage/
+
+# FIXME: Since the following files are already checked in,
+#        they're not ignored. You'll see noise in `git status`.
+
+# lb's OL3 derivative is used by another project that stores
+# the config files separately and copies them over. So ignore
+# these files, which are just modified locally.
+/config/ol.json
+/config/ol.json.ORIG
+/config/ol-debug.json
+/config/ol-debug.json.ORIG
+
+# Things that get build.
+externs/olx.js
+package.json
+
