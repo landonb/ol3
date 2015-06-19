@@ -12,3 +12,5 @@ jquery.min.map
 *.min.map
 *-min.map
 
+*node_modules/openlayers/node_modules/closure-util/.deps/library/*
+
