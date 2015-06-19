@@ -24,9 +24,11 @@ ol.FeatureLoader;
  * @param {function(this:ol.source.Vector, Array.<ol.Feature>)} success
  *     Function called with the loaded features. Called with the vector
  *     source as `this`.
+ * @param {string} post_body Use 'POST' HTTP method rather than 'GET'
+ *     and send this as the message body.
  * @return {ol.FeatureLoader} The feature loader.
  */
-ol.featureloader.loadFeaturesXhr = function(url, format, success) {
+ol.featureloader.loadFeaturesXhr = function(url, format, success, post_body) {
   return (
       /**
        * @param {ol.Extent} extent Extent.
@@ -77,10 +79,16 @@ ol.featureloader.loadFeaturesXhr = function(url, format, success) {
               }
               goog.dispose(xhrIo);
             }, false, this);
-// FIXME: Let caller specify GET or POST.
-//        [lb] is just testing for now.
-        //xhrIo.send(url);
-        xhrIo.send(url, 'POST', '{"test": "blah"}');
+
+        if (!post_body) {
+          xhrIo.send(url);
+        }
+        else {
+          goog.asserts.assert(goog.isString(post_body),
+              'post_body should be a string');
+          var http_method = 'POST';
+          xhrIo.send(url, http_method, post_body);
+        }
       });
 };
 
@@ -91,10 +99,11 @@ ol.featureloader.loadFeaturesXhr = function(url, format, success) {
  * vector source.
  * @param {string} url Feature URL service.
  * @param {ol.format.Feature} format Feature format.
+ * @param {string} post_body Send 'POST' request with this message body.
  * @return {ol.FeatureLoader} The feature loader.
  * @api
  */
-ol.featureloader.xhr = function(url, format) {
+ol.featureloader.xhr = function(url, format, post_body) {
   return ol.featureloader.loadFeaturesXhr(url, format,
       /**
        * @param {Array.<ol.Feature>} features The loaded features.
@@ -102,5 +111,6 @@ ol.featureloader.xhr = function(url, format) {
        */
       function(features) {
         this.addFeatures(features);
-      });
+      },
+      post_body);
 };
