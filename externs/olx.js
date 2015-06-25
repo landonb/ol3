@@ -4107,6 +4107,13 @@ olx.source.TileVectorOptions.prototype.url;
  */
 olx.source.TileVectorOptions.prototype.urls;
 
+/**
+ * Post body to send for vector tile requests.
+ * @type {Array.<string>|undefined}
+ * @api
+ */
+olx.source.TileVectorOptions.prototype.post_body;
+
 
 /**
  * @typedef {{url: (string|undefined),
