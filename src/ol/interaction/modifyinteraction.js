@@ -25,6 +25,41 @@ goog.require('ol.source.Vector');
 goog.require('ol.structs.RBush');
 goog.require('ol.style.Style');
 
+/**
+ * @enum {string}
+ */
+ol.ModifyEventType = {
+  /**
+   * Triggered when feature(s) have been modified.
+   * @event ol.ModifyEvent#modify
+   * @api
+   */
+  MODIFY: 'modify'
+};
+
+/**
+ * @classdesc
+ * Events emitted by {@link ol.interaction.Modify} instances are instances of
+ * this type.
+ *
+ * @param {string} type The event type.
+ * @param {ol.Collection.<ol.Feature>} features The modified features.
+ * @extends {goog.events.Event}
+ * @constructor
+ */
+ol.ModifyEvent = function(type, features) {
+  goog.base(this, type);
+
+  /**
+   * Selected features array.
+   * @type {ol.Collection.<ol.Feature>}
+   * @api
+   */
+  this.features = features;
+
+};
+goog.inherits(ol.ModifyEvent, goog.events.Event);
+
 
 /**
  * @typedef {{depth: (Array.<number>|undefined),
@@ -535,6 +570,7 @@ ol.interaction.Modify.handleUpEvent_ = function(evt) {
     this.rBush_.update(ol.extent.boundingExtent(segmentData.segment),
         segmentData);
   }
+  this.dispatchEvent(new ol.ModifyEvent(ol.ModifyEventType.MODIFY, this.features_));
   return false;
 };
 
