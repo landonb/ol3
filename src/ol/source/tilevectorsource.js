@@ -1,7 +1,10 @@
 goog.provide('ol.source.TileVector');
+goog.provide('ol.source.TileVectorEvent');
+goog.provide('ol.source.TileVectorEventType');
 
 goog.require('goog.array');
 goog.require('goog.asserts');
+goog.require('goog.events.Event');
 goog.require('goog.object');
 goog.require('ol.TileCoord');
 goog.require('ol.TileUrlFunction');
@@ -9,6 +12,20 @@ goog.require('ol.featureloader');
 goog.require('ol.source.State');
 goog.require('ol.source.Vector');
 goog.require('ol.tilegrid.TileGrid');
+
+
+
+/**
+ * @enum {string}
+ */
+ol.source.TileVectorEventType = {
+  /**
+   * Triggered when the features for a tile are received.
+   * @event ol.source.TileVectorEvent#loadtilefeatures
+   * @api stable
+   */
+  LOADTILEFEATURES: 'loadtilefeatures'
+};
 
 
 
@@ -265,13 +282,21 @@ ol.source.TileVector.prototype.loadFeatures =
   var tileCoord = [z, 0, 0];
   var x, y;
   /**
+   * @param {number} z Z.
+   * @param {number} x X.
+   * @param {number} y Y.
    * @param {string} tileKey Tile key.
    * @param {Array.<ol.Feature>} features Features.
    * @this {ol.source.TileVector}
    */
-  function success(tileKey, features) {
+  function success(z, x, y, tileKey, features) {
     tiles[tileKey] = features;
     this.changed();
+    // New event so users can bulk-process loaded features.
+    this.dispatchEvent(
+      new ol.source.TileVectorEvent(
+        ol.source.TileVectorEventType.LOADTILEFEATURES,
+        z, x, y, tileKey, features));
   }
   for (x = tileRange.minX; x <= tileRange.maxX; ++x) {
     for (y = tileRange.minY; y <= tileRange.maxY; ++y) {
@@ -324,3 +349,62 @@ ol.source.TileVector.prototype.setUrl = function(url) {
 ol.source.TileVector.prototype.setUrls = function(urls) {
   this.setTileUrlFunction(ol.TileUrlFunction.createFromTemplates(urls));
 };
+
+
+
+/**
+ * @classdesc
+ * Events emitted by {@link ol.source.TileVector} instances are instances of this
+ * type.
+ *
+ * @constructor
+ * @extends {goog.events.Event}
+ * @implements {oli.source.TileVectorEvent}
+ * @param {string} type Type.
+ * @param {number} z Z.
+ * @param {number} x X.
+ * @param {number} y Y.
+ * @param {string} tileKey Tile key.
+ * @param {Array.<ol.Feature>} features Features.
+ */
+ol.source.TileVectorEvent = function(type, z, x, y, tileKey, features) {
+
+  goog.base(this, type);
+
+  /**
+   * The z Z.
+   * @type {number}
+   * @api
+   */
+  this.z = z;
+
+  /**
+   * The x X.
+   * @type {number}
+   * @api
+   */
+  this.x = x;
+
+  /**
+   * The y Y.
+   * @type {number}
+   * @api
+   */
+  this.y = y;
+
+  /**
+   * The tileKey identifier in this.tiles_.
+   * @type {string}
+   * @api
+   */
+  this.tileKey = tileKey;
+
+  /**
+   * The features loaded into the tile.
+   * @type {Array.<ol.Feature>}
+   * @api
+   */
+  this.features = features;
+
+};
+goog.inherits(ol.source.TileVectorEvent, goog.events.Event);

@@ -262,6 +262,24 @@ oli.source.TileEvent.prototype.tile;
 /**
  * @interface
  */
+oli.source.TileVectorEvent = function() {};
+
+
+/**
+ * @type {string}
+ */
+oli.source.TileVectorEvent.prototype.tileKey;
+
+
+/**
+ * @type {Array.<ol.Feature>}
+ */
+oli.source.TileVectorEvent.prototype.features;
+
+
+/**
+ * @interface
+ */
 oli.source.VectorEvent = function() {};
 
 
