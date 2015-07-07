@@ -13,4 +13,7 @@ jquery.min.map
 *-min.map
 
 *node_modules/openlayers/node_modules/closure-util/.deps/library/*
+*node_modules/openlayers/node_modules/closure-util/node_modules/socket.io/node_modules/socket.io-client/node_modules/active-x-obfuscator/node_modules/zeparser/*
+*node_modules/openlayers/node_modules/browserify/node_modules/browserify-zlib/node_modules/pako/doc/*
+*node_modules/openlayers/node_modules/browserify/node_modules/insert-module-globals/node_modules/lexical-scope/bench/*
 
