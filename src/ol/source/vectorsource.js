@@ -96,8 +96,9 @@ ol.source.Vector = function(opt_options) {
   } else if (goog.isDef(options.url)) {
     goog.asserts.assert(goog.isDef(options.format),
         'format must be set when url is set');
-    // create a XHR feature loader for "url" and "format"
-    this.loader_ = ol.featureloader.xhr(options.url, options.format, options.post_body);
+    // create a XHR feature loader for "url" and "format", "postBody" optional
+    this.loader_ = ol.featureloader.xhr(options.url, options.format,
+        options.postBody);
   }
 
   /**

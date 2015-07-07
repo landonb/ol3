@@ -29,7 +29,7 @@ ol.source.TileVector = function(options) {
     logo: options.logo,
     projection: undefined,
     state: ol.source.State.READY,
-    post_body: options.post_body
+    postBody: options.postBody
   });
 
   /**
@@ -73,7 +73,7 @@ ol.source.TileVector = function(options) {
     this.setUrl(options.url);
   }
 
-  this.post_body_ = options.post_body;
+  this.postBody_ = options.postBody;
 };
 goog.inherits(ol.source.TileVector, ol.source.Vector);
 
@@ -285,7 +285,7 @@ ol.source.TileVector.prototype.loadFeatures =
         if (goog.isDef(url)) {
           tiles[tileKey] = [];
           var loader = ol.featureloader.loadFeaturesXhr(url, this.format_,
-            goog.partial(success, tileKey), this.post_body_);
+            goog.partial(success, z, x, y, tileKey), this.postBody_);
           loader.call(this, extent, resolution, projection);
         }
       }

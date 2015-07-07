@@ -24,11 +24,11 @@ ol.FeatureLoader;
  * @param {function(this:ol.source.Vector, Array.<ol.Feature>)} success
  *     Function called with the loaded features. Called with the vector
  *     source as `this`.
- * @param {string} post_body Use 'POST' HTTP method rather than 'GET'
+ * @param {string} postBody Use 'POST' HTTP method rather than 'GET'
  *     and send this as the message body.
  * @return {ol.FeatureLoader} The feature loader.
  */
-ol.featureloader.loadFeaturesXhr = function(url, format, success, post_body) {
+ol.featureloader.loadFeaturesXhr = function(url, format, success, postBody) {
   return (
       /**
        * @param {ol.Extent} extent Extent.
@@ -80,14 +80,13 @@ ol.featureloader.loadFeaturesXhr = function(url, format, success, post_body) {
               goog.dispose(xhrIo);
             }, false, this);
 
-        if (!post_body) {
+        if (!postBody) {
           xhrIo.send(url);
         }
         else {
-          goog.asserts.assert(goog.isString(post_body),
-              'post_body should be a string');
+          goog.asserts.assert(goog.isString(postBody), 'postBody is a string');
           var http_method = 'POST';
-          xhrIo.send(url, http_method, post_body);
+          xhrIo.send(url, http_method, postBody);
         }
       });
 };
@@ -99,11 +98,11 @@ ol.featureloader.loadFeaturesXhr = function(url, format, success, post_body) {
  * vector source.
  * @param {string} url Feature URL service.
  * @param {ol.format.Feature} format Feature format.
- * @param {string} post_body Send 'POST' request with this message body.
+ * @param {string} postBody Send 'POST' request with this message body.
  * @return {ol.FeatureLoader} The feature loader.
  * @api
  */
-ol.featureloader.xhr = function(url, format, post_body) {
+ol.featureloader.xhr = function(url, format, postBody) {
   return ol.featureloader.loadFeaturesXhr(url, format,
       /**
        * @param {Array.<ol.Feature>} features The loaded features.
@@ -112,5 +111,5 @@ ol.featureloader.xhr = function(url, format, post_body) {
       function(features) {
         this.addFeatures(features);
       },
-      post_body);
+      postBody);
 };

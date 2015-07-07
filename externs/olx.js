@@ -4113,7 +4113,7 @@ olx.source.TileVectorOptions.prototype.urls;
  * @type {string|undefined}
  * @api
  */
-olx.source.TileVectorOptions.prototype.post_body;
+olx.source.TileVectorOptions.prototype.postBody;
 
 
 /**
