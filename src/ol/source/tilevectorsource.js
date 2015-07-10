@@ -21,8 +21,8 @@ goog.require('ol.tilegrid.TileGrid');
 ol.source.TileVectorEventType = {
   /**
    * Triggered when the features for a tile are received.
-   * @event ol.source.TileVectorEvent#loadtilefeatures
-   * @api stable
+   * @event ol.source.TileVectorEventType#loadtilefeatures
+   * @api
    */
   LOADTILEFEATURES: 'loadtilefeatures'
 };
@@ -282,7 +282,7 @@ ol.source.TileVector.prototype.loadFeatures =
   var tileCoord = [z, 0, 0];
   var x, y;
   /**
-   * @param {number} z Z.
+   * @param {string} z Z.
    * @param {number} x X.
    * @param {number} y Y.
    * @param {string} tileKey Tile key.
@@ -361,7 +361,7 @@ ol.source.TileVector.prototype.setUrls = function(urls) {
  * @extends {goog.events.Event}
  * @implements {oli.source.TileVectorEvent}
  * @param {string} type Type.
- * @param {number} z Z.
+ * @param {string} z Z.
  * @param {number} x X.
  * @param {number} y Y.
  * @param {string} tileKey Tile key.
@@ -373,7 +373,7 @@ ol.source.TileVectorEvent = function(type, z, x, y, tileKey, features) {
 
   /**
    * The z Z.
-   * @type {number}
+   * @type {string}
    * @api
    */
   this.z = z;
