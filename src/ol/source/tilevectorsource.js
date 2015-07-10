@@ -326,6 +326,15 @@ ol.source.TileVector.prototype.removeFeature = goog.abstractMethod;
 
 
 /**
+ * @param {string} postBody POST payload.
+ */
+ol.source.TileVector.prototype.setPostBody = function(postBody) {
+  this.postBody_ = postBody;
+  this.changed();
+};
+
+
+/**
  * @param {ol.TileUrlFunctionType} tileUrlFunction Tile URL function.
  */
 ol.source.TileVector.prototype.setTileUrlFunction = function(tileUrlFunction) {
