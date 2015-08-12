@@ -1,6 +1,10 @@
 goog.provide('ol.source.TileVector');
-goog.provide('ol.source.TileVectorEvent');
-goog.provide('ol.source.TileVectorEventType');
+goog.provide('ol.source.TileVectorEventLoad');
+goog.provide('ol.source.TileVectorEventLoadType');
+goog.provide('ol.source.TileVectorEventLoaded');
+goog.provide('ol.source.TileVectorEventLoadedType');
+goog.provide('ol.source.TileVectorEventLoading');
+goog.provide('ol.source.TileVectorEventLoadingType');
 
 goog.require('goog.array');
 goog.require('goog.asserts');
@@ -18,15 +22,41 @@ goog.require('ol.tilegrid.TileGrid');
 /**
  * @enum {string}
  */
-ol.source.TileVectorEventType = {
+ol.source.TileVectorEventLoadType = {
   /**
    * Triggered when the features for a tile are received.
-   * @event ol.source.TileVectorEventType#loadtilefeatures
+   * @event ol.source.TileVectorEventLoadType#loadtilefeatures
    * @api
    */
   LOADTILEFEATURES: 'loadtilefeatures'
 };
 
+
+/**
+ * @enum {string}
+ */
+ol.source.TileVectorEventLoadedType = {
+  /**
+   * Triggered when all outstanding tile requests have been completed.
+   * @event ol.source.TileVectorEventLoadedType#alltilesloaded
+   * @api
+   */
+  ALLTILESLOADED: 'alltilesloaded'
+};
+
+
+/**
+ * @enum {string}
+ */
+ol.source.TileVectorEventLoadingType = {
+  /**
+   * Triggered when one or more tile requests have been initiated and
+   * previously there were none outstanding.
+   * @event ol.source.TileVectorEventLoadingType#loadingtiles
+   * @api
+   */
+  LOADINGTILES: 'loadingtiles'
+};
 
 
 /**
@@ -45,8 +75,7 @@ ol.source.TileVector = function(options) {
     attributions: options.attributions,
     logo: options.logo,
     projection: undefined,
-    state: ol.source.State.READY,
-    postBody: options.postBody
+    state: ol.source.State.READY
   });
 
   /**
@@ -90,9 +119,38 @@ ol.source.TileVector = function(options) {
     this.setUrl(options.url);
   }
 
+  /**
+   * @private
+   * @type {string}
+   */
   this.postBody_ = options.postBody;
+
+  /**
+   * @private
+   * @type {Object.<string, goog.net.XhrIo>}
+   */
+  this.outstanding_ = {};
+
+  /**
+   * @private
+   * @type {number}
+   */
+  this.n_outstanding_ = 0;
 };
 goog.inherits(ol.source.TileVector, ol.source.Vector);
+
+
+/**
+ * Cancel (abort) all outstanding XHR tile requests.
+ * @api
+ */
+ol.source.TileVector.prototype.abortAll = function() {
+  for (var tileKey in this.outstanding_) {
+    if (this.outstanding_.hasOwnProperty(tileKey)) {
+      this.outstanding_[tileKey].abort();
+    }
+  }
+};
 
 
 /**
@@ -105,6 +163,22 @@ ol.source.TileVector.prototype.addFeature = goog.abstractMethod;
  * @inheritDoc
  */
 ol.source.TileVector.prototype.addFeatures = goog.abstractMethod;
+
+
+/**
+ * Cleanup an outstanding tile request.
+ * @param {string} tileKey Tile key.
+ * @private
+ */
+ol.source.TileVector.prototype.cleanup_request = function(tileKey) {
+    delete this.outstanding_[tileKey];
+    this.n_outstanding_ -= 1;
+    if (this.n_outstanding_ == 0) {
+      this.dispatchEvent(
+        new ol.source.TileVectorEventLoaded(
+          ol.source.TileVectorEventLoadedType.ALLTILESLOADED));
+    }
+};
 
 
 /**
@@ -281,6 +355,7 @@ ol.source.TileVector.prototype.loadFeatures =
   var tileRange = tileGrid.getTileRangeForExtentAndZ(extent, z);
   var tileCoord = [z, 0, 0];
   var x, y;
+  var old_outstanding = this.n_outstanding_;
   /**
    * @param {string} z Z.
    * @param {number} x X.
@@ -290,13 +365,22 @@ ol.source.TileVector.prototype.loadFeatures =
    * @this {ol.source.TileVector}
    */
   function success(z, x, y, tileKey, features) {
+    this.cleanup_request(tileKey);
     tiles[tileKey] = features;
     this.changed();
     // New event so users can bulk-process loaded features.
     this.dispatchEvent(
-      new ol.source.TileVectorEvent(
-        ol.source.TileVectorEventType.LOADTILEFEATURES,
+      new ol.source.TileVectorEventLoad(
+        ol.source.TileVectorEventLoadType.LOADTILEFEATURES,
         z, x, y, tileKey, features));
+  }
+  /**
+   * @param {string} tileKey Tile key.
+   * @param {Event} event Event.
+   * @this {ol.source.TileVector}
+   */
+  function failure(tileKey, event) {
+    this.cleanup_request(tileKey);
   }
   for (x = tileRange.minX; x <= tileRange.maxX; ++x) {
     for (y = tileRange.minY; y <= tileRange.maxY; ++y) {
@@ -310,12 +394,33 @@ ol.source.TileVector.prototype.loadFeatures =
         if (goog.isDef(url)) {
           tiles[tileKey] = [];
           var loader = ol.featureloader.loadFeaturesXhr(url, this.format_,
-            goog.partial(success, z, x, y, tileKey), this.postBody_);
-          loader.call(this, extent, resolution, projection);
+            goog.partial(success, z, x, y, tileKey),
+            goog.partial(failure, tileKey), this.postBody_);
+          // Remember the xhr object so the caller can cancel tile requests.
+          var xhrIo = loader.call(this, extent, resolution, projection);
+          this.outstanding_[tileKey] = xhrIo;
+          this.n_outstanding_ += 1;
         }
       }
     }
   }
+  if (this.n_outstanding_ > 0) {
+    var new_requests = this.n_outstanding_ - old_outstanding;
+    if (old_outstanding == 0) {
+      this.dispatchEvent(
+        new ol.source.TileVectorEventLoading(
+          ol.source.TileVectorEventLoadingType.LOADINGTILES));
+    }
+  }
+};
+
+
+/**
+ * @return {number} Number of outstanding requests.
+ * @api
+ */
+ol.source.TileVector.prototype.outstanding = function() {
+  return this.n_outstanding_;
 };
 
 
@@ -327,6 +432,7 @@ ol.source.TileVector.prototype.removeFeature = goog.abstractMethod;
 
 /**
  * @param {string} postBody POST payload.
+ * @api
  */
 ol.source.TileVector.prototype.setPostBody = function(postBody) {
   this.postBody_ = postBody;
@@ -363,12 +469,12 @@ ol.source.TileVector.prototype.setUrls = function(urls) {
 
 /**
  * @classdesc
- * Events emitted by {@link ol.source.TileVector} instances are instances of this
- * type.
+ * Some events emitted by {@link ol.source.TileVector} instances are instances
+ * of this type.
  *
  * @constructor
  * @extends {goog.events.Event}
- * @implements {oli.source.TileVectorEvent}
+ * @implements {oli.source.TileVectorEventLoad}
  * @param {string} type Type.
  * @param {string} z Z.
  * @param {number} x X.
@@ -376,7 +482,7 @@ ol.source.TileVector.prototype.setUrls = function(urls) {
  * @param {string} tileKey Tile key.
  * @param {Array.<ol.Feature>} features Features.
  */
-ol.source.TileVectorEvent = function(type, z, x, y, tileKey, features) {
+ol.source.TileVectorEventLoad = function(type, z, x, y, tileKey, features) {
 
   goog.base(this, type);
 
@@ -416,4 +522,42 @@ ol.source.TileVectorEvent = function(type, z, x, y, tileKey, features) {
   this.features = features;
 
 };
-goog.inherits(ol.source.TileVectorEvent, goog.events.Event);
+goog.inherits(ol.source.TileVectorEventLoad, goog.events.Event);
+
+
+
+/**
+ * @classdesc
+ * Some events emitted by {@link ol.source.TileVector} instances are instances
+ * of this type.
+ *
+ * @constructor
+ * @extends {goog.events.Event}
+ * @implements {oli.source.TileVectorEventLoading}
+ * @param {string} type Type.
+ */
+ol.source.TileVectorEventLoading = function(type) {
+
+  goog.base(this, type);
+
+};
+goog.inherits(ol.source.TileVectorEventLoading, goog.events.Event);
+
+
+
+/**
+ * @classdesc
+ * Some events emitted by {@link ol.source.TileVector} instances are instances
+ * of this type.
+ *
+ * @constructor
+ * @extends {goog.events.Event}
+ * @implements {oli.source.TileVectorEventLoaded}
+ * @param {string} type Type.
+ */
+ol.source.TileVectorEventLoaded = function(type) {
+
+  goog.base(this, type);
+
+};
+goog.inherits(ol.source.TileVectorEventLoaded, goog.events.Event);
