@@ -24,11 +24,14 @@ ol.FeatureLoader;
  * @param {function(this:ol.source.Vector, Array.<ol.Feature>)} success
  *     Function called with the loaded features. Called with the vector
  *     source as `this`.
- * @param {string} postBody Use 'POST' HTTP method rather than 'GET'
+ * @param {function(this:ol.source.Vector, Event)|null} failure
+ *     Function called on error. Called with the vector source as `this`
+ *     and the `event`.
+ * @param {string|null|undefined} postBody Use 'POST' HTTP method rather than 'GET'
  *     and send this as the message body.
  * @return {ol.FeatureLoader} The feature loader.
  */
-ol.featureloader.loadFeaturesXhr = function(url, format, success, postBody) {
+ol.featureloader.loadFeaturesXhr = function(url, format, success, failure, postBody) {
   return (
       /**
        * @param {ol.Extent} extent Extent.
@@ -75,7 +78,9 @@ ol.featureloader.loadFeaturesXhr = function(url, format, success, postBody) {
                   goog.asserts.fail('undefined or null source');
                 }
               } else {
-                // FIXME
+                if (failure != null) {
+                  failure.call(this, event);
+                }
               }
               goog.dispose(xhrIo);
             }, false, this);
@@ -88,6 +93,7 @@ ol.featureloader.loadFeaturesXhr = function(url, format, success, postBody) {
           var http_method = 'POST';
           xhrIo.send(url, http_method, postBody);
         }
+        return xhrIo;
       });
 };
 
@@ -98,7 +104,7 @@ ol.featureloader.loadFeaturesXhr = function(url, format, success, postBody) {
  * vector source.
  * @param {string} url Feature URL service.
  * @param {ol.format.Feature} format Feature format.
- * @param {string} postBody Send 'POST' request with this message body.
+ * @param {string|null|undefined} postBody Send 'POST' request with this message body.
  * @return {ol.FeatureLoader} The feature loader.
  * @api
  */
@@ -111,5 +117,6 @@ ol.featureloader.xhr = function(url, format, postBody) {
       function(features) {
         this.addFeatures(features);
       },
+      null,
       postBody);
 };
