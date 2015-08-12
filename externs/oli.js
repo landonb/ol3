@@ -262,38 +262,50 @@ oli.source.TileEvent.prototype.tile;
 /**
  * @interface
  */
-oli.source.TileVectorEvent = function() {};
+oli.source.TileVectorEventLoad = function() {};
 
 
 /**
  * @type {string}
  */
-oli.source.TileVectorEvent.prototype.z;
+oli.source.TileVectorEventLoad.prototype.z;
 
 
 /**
  * @type {number}
  */
-oli.source.TileVectorEvent.prototype.x;
+oli.source.TileVectorEventLoad.prototype.x;
 
 
 /**
  * @type {number}
  */
-oli.source.TileVectorEvent.prototype.y;
+oli.source.TileVectorEventLoad.prototype.y;
 
 
 /**
  * @type {string}
  */
-oli.source.TileVectorEvent.prototype.tileKey;
+oli.source.TileVectorEventLoad.prototype.tileKey;
 
 
 
 /**
  * @type {Array.<ol.Feature>}
  */
-oli.source.TileVectorEvent.prototype.features;
+oli.source.TileVectorEventLoad.prototype.features;
+
+
+/**
+ * @interface
+ */
+oli.source.TileVectorEventLoaded = function() {};
+
+
+/**
+ * @interface
+ */
+oli.source.TileVectorEventLoading = function() {};
 
 
 /**
