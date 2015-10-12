@@ -127,6 +127,12 @@ ol.source.TileVector = function(options) {
 
   /**
    * @private
+   * @type {boolean}
+   */
+  this.useCORS_ = options.useCORS;
+
+  /**
+   * @private
    * @type {Object.<string, goog.net.XhrIo>}
    */
   this.outstanding_ = {};
@@ -395,7 +401,7 @@ ol.source.TileVector.prototype.loadFeatures =
           tiles[tileKey] = [];
           var loader = ol.featureloader.loadFeaturesXhr(url, this.format_,
             goog.partial(success, z, x, y, tileKey),
-            goog.partial(failure, tileKey), this.postBody_);
+            goog.partial(failure, tileKey), this.postBody_, this.useCORS_);
           // Remember the xhr object so the caller can cancel tile requests.
           var xhrIo = loader.call(this, extent, resolution, projection);
           this.outstanding_[tileKey] = xhrIo;
@@ -436,6 +442,15 @@ ol.source.TileVector.prototype.removeFeature = goog.abstractMethod;
  */
 ol.source.TileVector.prototype.setPostBody = function(postBody) {
   this.postBody_ = postBody;
+  this.changed();
+};
+
+/**
+ * @param {boolean} useCORS POST payload.
+ * @api
+ */
+ol.source.TileVector.prototype.setUseCORS = function(useCORS) {
+  this.useCORS_ = useCORS;
   this.changed();
 };
 
