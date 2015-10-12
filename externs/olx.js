@@ -4115,6 +4115,14 @@ olx.source.TileVectorOptions.prototype.urls;
  */
 olx.source.TileVectorOptions.prototype.postBody;
 
+/**
+ * Use a goog.net.CorsXmlHttpFactory for
+ * CORs compatible XHR requests (useful for IE8-9)
+ * @type {boolean|undefined}
+ * @api
+ */
+olx.source.TileVectorOptions.prototype.useCORS;
+
 
 /**
  * @typedef {{url: (string|undefined),

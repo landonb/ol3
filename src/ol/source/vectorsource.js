@@ -98,7 +98,7 @@ ol.source.Vector = function(opt_options) {
         'format must be set when url is set');
     // create a XHR feature loader for "url" and "format", "postBody" optional
     this.loader_ = ol.featureloader.xhr(options.url, options.format,
-        options.postBody);
+        options.postBody, options.useCORS);
   }
 
   /**

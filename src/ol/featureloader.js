@@ -6,6 +6,7 @@ goog.require('goog.events');
 goog.require('goog.net.EventType');
 goog.require('goog.net.XhrIo');
 goog.require('goog.net.XhrIo.ResponseType');
+goog.require('goog.net.CorsXmlHttpFactory');
 goog.require('ol.format.FormatType');
 goog.require('ol.xml');
 
@@ -29,9 +30,11 @@ ol.FeatureLoader;
  *     and the `event`.
  * @param {string|null|undefined} postBody Use 'POST' HTTP method rather than 'GET'
  *     and send this as the message body.
+ * @param {boolean|null|undefined} useCORS Use a goog.net.CorsXmlHttpFactory for
+ * CORs compatible XHR requests (useful for IE8-9).
  * @return {ol.FeatureLoader} The feature loader.
  */
-ol.featureloader.loadFeaturesXhr = function(url, format, success, failure, postBody) {
+ol.featureloader.loadFeaturesXhr = function(url, format, success, failure, postBody, useCORS) {
   return (
       /**
        * @param {ol.Extent} extent Extent.
@@ -41,6 +44,9 @@ ol.featureloader.loadFeaturesXhr = function(url, format, success, failure, postB
        */
       function(extent, resolution, projection) {
         var xhrIo = new goog.net.XhrIo();
+        if(useCORS) {
+            xhrIo = new goog.net.XhrIo(new goog.net.CorsXmlHttpFactory());
+        }
         xhrIo.setResponseType(goog.net.XhrIo.ResponseType.TEXT);
         goog.events.listen(xhrIo, goog.net.EventType.COMPLETE,
             /**
@@ -105,10 +111,12 @@ ol.featureloader.loadFeaturesXhr = function(url, format, success, failure, postB
  * @param {string} url Feature URL service.
  * @param {ol.format.Feature} format Feature format.
  * @param {string|null|undefined} postBody Send 'POST' request with this message body.
+ * @param {boolean|null|undefined} useCORS Use a goog.net.CorsXmlHttpFactory for
+ * CORs compatible XHR requests (useful for IE8-9).
  * @return {ol.FeatureLoader} The feature loader.
  * @api
  */
-ol.featureloader.xhr = function(url, format, postBody) {
+ol.featureloader.xhr = function(url, format, postBody, useCORS) {
   return ol.featureloader.loadFeaturesXhr(url, format,
       /**
        * @param {Array.<ol.Feature>} features The loaded features.
@@ -118,5 +126,6 @@ ol.featureloader.xhr = function(url, format, postBody) {
         this.addFeatures(features);
       },
       null,
-      postBody);
+      postBody,
+      useCORS);
 };
